@@ -22,7 +22,6 @@ SEARCHES = [
 
 SEEN_FILE = "seen.json"
 
-
 def send(msg):
     requests.get(
         f"https://api.telegram.org/bot{TOKEN}/sendMessage",
@@ -33,18 +32,15 @@ def send(msg):
         }
     )
 
-
 def load_seen():
     if os.path.exists(SEEN_FILE):
         with open(SEEN_FILE, "r") as f:
             return set(json.load(f))
     return set()
 
-
 def save_seen(seen):
     with open(SEEN_FILE, "w") as f:
         json.dump(list(seen), f)
-
 
 seen = load_seen()
 
@@ -60,47 +56,29 @@ for search in SEARCHES:
 
     try:
         r = requests.get(url, timeout=15)
+
+        print("URL:", url)
+        print("STATUS:", r.status_code)
+        print(r.text[:500])
+
         root = ET.fromstring(r.content)
 
         for item in root.findall(".//item"):
 
             title = item.findtext("title", "")
             link = item.findtext("link", "")
-
             guid = item.findtext("guid", link)
 
             if guid in seen:
                 continue
 
-            description = item.findtext("description", "")
-
-            price_ok = True
-
-            if "max_price" in search:
-
-                import re
-
-                match = re.search(r"(\d+)", description.replace(" ", ""))
-
-                if match:
-                    price = int(match.group(1))
-                    price_ok = price <= search["max_price"]
-
-            if not price_ok:
-                continue
-
-            msg = (
-                f"🔥 {query}\n\n"
-                f"{title}\n\n"
-                f"{link}"
-            )
+            msg = f"🔥 {query}\n\n{title}\n\n{link}"
 
             send(msg)
-
             seen.add(guid)
 
     except Exception as e:
-        print(e)
+        print("ERROR:", e)
 
 save_seen(seen)
 
