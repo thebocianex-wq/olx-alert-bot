@@ -7,16 +7,15 @@ TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 SEARCHES = [
-    {"name": "hulajnoga elektryczna"},
+    {"name": "hulajnoga elektryczna dualtron"},
     {"name": "Axxo"},
     {"name": "Grand Fitness"},
     {"name": "Eleiko"},
-    {"name": "Samtek"},
-    {"name": "obciążenie kalibrowane"},
-    {"name": "talerze kalibrowane"},
+    {"name": "sztanga Samtek"},
     {"name": "Kukirin G2 Max", "max_price": 1600},
     {"name": "Kukirin G4", "max_price": 2200},
     {"name": "Ausom L2 Max Dual", "max_price": 2200},
+    {"name": "Ausom L2 Dual Max", "max_price": 2200},
 ]
 
 SEEN_FILE = "seen.json"
@@ -64,6 +63,8 @@ with sync_playwright() as p:
 
             url = f"https://www.olx.pl/oferty/q-{query.replace(' ', '-')}/"
 
+            print(f"Sprawdzam: {query}")
+
             page.goto(url, wait_until="networkidle", timeout=60000)
 
             offers = page.locator('a[href*="/d/oferta/"]')
@@ -81,12 +82,21 @@ with sync_playwright() as p:
                 if not link:
                     continue
 
+                if link.startswith("/"):
+                    link = "https://www.olx.pl" + link
+
                 if link in seen:
                     continue
 
-                msg = f"🔥 {query}\n\n{title}\n\n{link}"
+                msg = (
+                    f"🔥 {query}\n\n"
+                    f"📦 {title}\n\n"
+                    f"🔗 {link}"
+                )
 
                 send(msg)
+
+                print("Wysłano:", title)
 
                 seen.add(link)
 
