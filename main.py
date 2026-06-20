@@ -76,7 +76,9 @@ with sync_playwright() as p:
                 offer = offers.nth(i)
 
                 title = offer.inner_text().strip()
+                full_text = offer.locator("xpath=..").inner_text()
                 print("OFERTA:", title)
+                print("FULL:", full_text)
 
                 link = offer.get_attribute("href")
 
