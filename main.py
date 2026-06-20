@@ -7,6 +7,7 @@ TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 SEARCHES = [
+    {"name": "hulajnoga elektryczna"},
     {"name": "Axxo"},
     {"name": "Grand Fitness"},
     {"name": "Eleiko"},
