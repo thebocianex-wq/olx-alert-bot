@@ -2,6 +2,7 @@ name: OLX Alert Bot
 
 on:
   workflow_dispatch:
+ 
   schedule:
     - cron: '*/15 * * * *'
 
