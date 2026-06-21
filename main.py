@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from playwright.sync_api import sync_playwright
 
@@ -77,8 +78,6 @@ with sync_playwright() as p:
 
                 title = offer.inner_text().strip()
                 full_text = offer.locator("xpath=..").inner_text()
-                print("OFERTA:", title)
-                print("FULL:", full_text)
 
                 link = offer.get_attribute("href")
 
@@ -91,9 +90,27 @@ with sync_playwright() as p:
                 if link in seen:
                     continue
 
+                price = None
+                price_text = "brak ceny"
+
+                match = re.search(r'(\d[\d ]*)\s*zł', full_text)
+
+                if match:
+                    price_text = match.group(0)
+                    price = int(match.group(1).replace(" ", ""))
+
+                if "max_price" in search and price is not None:
+
+                    if price > search["max_price"]:
+                        print(
+                            f"Pominięto {title} | {price} zł > {search['max_price']} zł"
+                        )
+                        continue
+
                 msg = (
                     f"🔥 {query}\n\n"
-                    f"📦 {title}\n\n"
+                    f"📦 {title}\n"
+                    f"💰 {price_text}\n\n"
                     f"🔗 {link}"
                 )
 
