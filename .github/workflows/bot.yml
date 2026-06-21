@@ -1,8 +1,6 @@
 name: OLX Alert Bot2
 
 on:
-  workflow_dispatch:
-  push:
   schedule:
     - cron: '*/5 * * * *'
 
