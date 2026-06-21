@@ -1,4 +1,4 @@
-name: OLX Alert Bot
+name: OLX Alert Bot2
 
 on:
   workflow_dispatch:
