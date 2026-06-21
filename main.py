@@ -4,6 +4,8 @@ import re
 import requests
 from playwright.sync_api import sync_playwright
 
+print("NOWA WERSJA BOTA")
+
 TOKEN = os.environ["TELEGRAM_TOKEN"]
 CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
@@ -64,9 +66,13 @@ with sync_playwright() as p:
 
             url = f"https://www.olx.pl/oferty/q-{query.replace(' ', '-')}/"
 
-            print(f"Sprawdzam: {query}")
+            print(f"\nSprawdzam: {query}")
 
-            page.goto(url, wait_until="networkidle", timeout=60000)
+            page.goto(
+                url,
+                wait_until="networkidle",
+                timeout=60000
+            )
 
             offers = page.locator('a[href*="/d/oferta/"]')
 
@@ -76,8 +82,15 @@ with sync_playwright() as p:
 
                 offer = offers.nth(i)
 
-                title = offer.inner_text().strip()
-                full_text = offer.locator("xpath=..").inner_text()
+                try:
+                    title = offer.inner_text().strip()
+                except:
+                    title = ""
+
+                try:
+                    full_text = offer.locator("xpath=..").inner_text()
+                except:
+                    full_text = title
 
                 link = offer.get_attribute("href")
 
@@ -90,20 +103,39 @@ with sync_playwright() as p:
                 if link in seen:
                     continue
 
+                # SZUKANIE CENY
                 price = None
                 price_text = "brak ceny"
 
-                match = re.search(r'(\d[\d ]*)\s*zł', full_text)
+                match = re.search(
+                    r'(\d[\d ]*)\s*zł',
+                    full_text,
+                    re.IGNORECASE
+                )
 
                 if match:
                     price_text = match.group(0)
-                    price = int(match.group(1).replace(" ", ""))
+                    price = int(
+                        match.group(1)
+                        .replace(" ", "")
+                    )
 
-                if "max_price" in search and price is not None:
+                print("TITLE:", title)
+                print("PRICE:", price)
+                print("LIMIT:", search.get("max_price"))
+
+                # FILTR CENOWY
+                if "max_price" in search:
+
+                    if price is None:
+                        print("BRAK CENY - POMINIĘTO")
+                        continue
 
                     if price > search["max_price"]:
                         print(
-                            f"Pominięto {title} | {price} zł > {search['max_price']} zł"
+                            f"POMINIĘTO: {title} | "
+                            f"{price} zł > "
+                            f"{search['max_price']} zł"
                         )
                         continue
 
@@ -116,12 +148,12 @@ with sync_playwright() as p:
 
                 send(msg)
 
-                print("Wysłano:", title)
+                print("WYSŁANO:", title)
 
                 seen.add(link)
 
         except Exception as e:
-            print(query, e)
+            print("BŁĄD:", query, e)
 
     browser.close()
 
